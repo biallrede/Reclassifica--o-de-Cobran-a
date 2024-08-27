@@ -1,0 +1,12 @@
+fastapi
+pandas
+uvicorn 
+psycopg2
+pyodbc
+requests
+python-dotenv
+openpyxl
+multipart 
+apscheduler
+schedule
+
