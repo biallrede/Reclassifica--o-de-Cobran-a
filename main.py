@@ -56,6 +56,7 @@ def enviar_email(df_servico_forma_cobranca,retorno):
             servidor_smtp.quit()
 
 def verifica_servico_forma_cobranca():
+    retorno = ''
     df_servico_forma_cobranca = consulta_servico_cobranca()
     df_de_para = pd.read_excel("de_para.xlsx")
     for i in range(0,len(df_servico_forma_cobranca)):
