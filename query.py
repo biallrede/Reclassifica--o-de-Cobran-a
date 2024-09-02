@@ -1,5 +1,5 @@
 import pandas as pd 
-from credentials import credenciais_banco, credenciais_banco_teste
+from credentials import credenciais_banco, credenciais_banco_teste, credenciais_banco_token
 
 def consulta_servico_cobranca():
     conn = credenciais_banco()   
@@ -81,5 +81,13 @@ def consulta_informacoes_servico(id_cliente_servico):
             where a.id_cliente_servico = {id_cliente_servico}
 
             '''.format(id_cliente_servico=id_cliente_servico)
+    df = pd.read_sql(query,conn)
+    return df
+
+def consulta_token():
+    conn = credenciais_banco_token()
+    query = '''
+            select token from API_TOKEN_HUBSOFT
+            '''
     df = pd.read_sql(query,conn)
     return df

@@ -68,7 +68,7 @@ def verifica_servico_forma_cobranca():
         # Verifica se o valor de 'plano' está presente na coluna 'servico' do DataFrame df_de_para
         cont=0
         for servico in df_de_para['servico']:
-            if plano == servico:
+            if servico in plano:
                 # Obtém o valor correspondente de 'id_forma_cobranca'
                 id_forma_cobranca = df_de_para['id_forma_cobranca'][cont]
                 # descricao_forma_cobranca = df_de_para['descricao'][cont]
@@ -86,15 +86,17 @@ def verifica_servico_forma_cobranca():
         
 
 
-scheduler = BackgroundScheduler()
+# scheduler = BackgroundScheduler()
 
-def rotina1():
-    verifica_servico_forma_cobranca()
+# def rotina1():
+#     verifica_servico_forma_cobranca()
     
 
-schedule.every().day.at("17:30").do(rotina1)
-scheduler.start()
+# schedule.every().day.at("10:45").do(rotina1)
+# scheduler.start()
 
-while (1 == 1):
-    schedule.run_pending()
-    threading.Event().wait(1)
+# while (1 == 1):
+#     schedule.run_pending()
+#     threading.Event().wait(1)
+
+verifica_servico_forma_cobranca()
