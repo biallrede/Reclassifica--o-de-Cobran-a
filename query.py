@@ -42,7 +42,7 @@ def consulta_servico_cobranca():
                 and a.data_habilitacao notnull
                 ) as consulta 
                 where consulta.status_cobranca = 0
-                --and consulta.id_cliente_servico = 1624
+                --and consulta.id_cliente_servico = 1052379
                     '''
         
     df = pd.read_sql(query,conn)
@@ -75,7 +75,11 @@ def consulta_informacoes_servico(id_cliente_servico):
             a.agrupamento_fatura,
             a.carne,
             a.tipo_cobranca,
-            a.validade
+            a.validade,
+			a.id_usuario_vendedor,
+			a.anotacoes,
+			a.referencia,
+			b.id_servico_tecnologia
             from cliente_servico a
             left join servico_tecnologia b on b.id_servico_tecnologia = a.id_servico_tecnologia
             where a.id_cliente_servico = {id_cliente_servico}

@@ -22,6 +22,7 @@ def enviar_email(df_servico_forma_cobranca,retorno):
     MAIL_FROM_ADDRESS = "novosprodutosdev@allrede.net.br"
     MAIL_FROM_NAME = "Allrede"
     MAIL_TO_ADDRESS = "leidiane.rodrigues@allrede.com.br,amanda.lima@allrede.com.br"
+    # "leidiane.rodrigues@allrede.com.br,amanda.lima@allrede.com.br"
     #MAIL_TO_ADDRESS = "jorge.pacheco@allrede.com.br,leidiane.rodrigues@allrede.com.br,amanda.lima@allrede.com.br,erick.oliveira@allrede.com.br"
     MAIL_SUBJECT = assunto
     MAIL_BODY = mensagem
@@ -72,7 +73,7 @@ def verifica_servico_forma_cobranca():
                 # Obtém o valor correspondente de 'id_forma_cobranca'
                 id_forma_cobranca = df_de_para['id_forma_cobranca'][cont]
                 # descricao_forma_cobranca = df_de_para['descricao'][cont]
-                print(id_cliente_servico,id_forma_cobranca)
+                # print(id_cliente_servico,id_forma_cobranca)
                 dados_rota = gera_dados_rota(id_cliente_servico,id_forma_cobranca)
                 # print(dados_rota)
                 retorno = executa_correcao(id_cliente_servico,dados_rota)

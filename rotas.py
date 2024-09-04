@@ -2,23 +2,25 @@ import requests
 from dotenv import load_dotenv
 import os
 import json
-from query import consulta_grupo_cliente,consulta_informacoes_servico
+from query import consulta_grupo_cliente,consulta_informacoes_servico, consulta_token
 import pandas as pd
 
 def gera_dados_rota(id_cliente_servico,id_forma_cobranca_correto):
     load_dotenv()
     # Defina o token de autenticação Bearer
-    token = os.getenv("TOKEN")
+    df_token = consulta_token()
+    token = str(df_token.loc[0,'token'])
     rota = os.getenv("URL_PROD") 
     # print(rota)
     url = "{rota}/api/v1/cliente/servico/{id_cliente}/edit".format(rota=rota,id_cliente=id_cliente_servico)
-    # print(url)
-    headers = {"Authorization": f"Bearer {token}"}
+    print(url)
+    headers = {"Authorization": f"Bearer {token}", 'Cookie': 'hubsoft_session=3iRGX6hlpMaDeWumtshbSnNlsH3s4tBBnjEHkNPd'}
     response = requests.get(url, headers=headers)
 
     dados = response.json()
     response = requests.get(url, headers=headers)
 
+    forma_dict = []
     if response.status_code == 200:
         dados = response.json()
         dados_servico = pd.DataFrame(consulta_informacoes_servico(id_cliente_servico))
@@ -35,14 +37,21 @@ def gera_dados_rota(id_cliente_servico,id_forma_cobranca_correto):
             carne = dados_servico.loc[i,"carne"]
             tipo_cobranca = dados_servico.loc[i,"tipo_cobranca"]
             validade = dados_servico.loc[i,"validade"]
+            referencia = dados_servico.loc[i,"referencia"]
+            anotacoes = dados_servico.loc[i,"anotacoes"]
+            vendedor = dados_servico.loc[i,"id_usuario_vendedor"]
+            id_servico_tecnologia = dados_servico.loc[i,"id_servico_tecnologia"]
 
-        servico_tecnologia = dados.get("servico_tecnologia",[])
-        servico_tecnologia_dict = servico_tecnologia[0] if isinstance(servico_tecnologia, list) and servico_tecnologia else {}
-     
-        servico_taxa_instalacao = dados.get("servico_taxa_instalacao",[])
-        servico_taxa_instalacao_dict = servico_taxa_instalacao[0] if isinstance(servico_taxa_instalacao, list) and servico_taxa_instalacao else {}
-        if "id_forma_cobranca" in servico_taxa_instalacao_dict:
-            servico_taxa_instalacao_dict["id_forma_cobranca"] = id_forma_cobranca_correto
+        # servico_tecnologia = dados.get("servico_tecnologia",[])
+        # servico_tecnologia_dict = servico_tecnologia[0] if isinstance(servico_tecnologia, list) and servico_tecnologia else {}
+
+        servico_encontrado = next((servico for servico in dados.get("servico_tecnologia", []) if servico["id_servico_tecnologia"] == id_servico_tecnologia), None)
+        servico_tecnologia = servico_encontrado
+
+
+        # servico_taxa_instalacao = dados.get("servico_taxa_instalacao",[])
+        # for servico in servico_taxa_instalacao:
+        #     servico["id_forma_cobranca"] = id_forma_cobranca_correto  # Corrigido para usar [] para atribuição
 
         forma_cobranca = dados.get("formas_cobranca",[])
         for forma in forma_cobranca:
@@ -65,9 +74,14 @@ def gera_dados_rota(id_cliente_servico,id_forma_cobranca_correto):
         
         dados_rota = {
             "id_servico": int(id_servico),  # Certifique-se de converter para int
+            "id_servico_tecnologia": int(id_servico_tecnologia),
             "id_cliente_servico": int(id_cliente_servico),  # Conversão para int
             "id_servico_status": int(id_servico_status),  # Conversão para int
             "id_vencimento": int(id_vencimento),  # Conversão para int
+            "id_forma_cobranca": int(id_forma_cobranca_correto),
+            "id_usuario_vendedor": int(vendedor),
+            "anotacoes": str(anotacoes),
+            "referencia": str(referencia),
             "valor": float(valor),  # Conversão para float, se necessário
             "data_venda": str(data_venda),  # Conversão para string, se necessário
             "agrupamento_nota": str(agrupamento_nota),
@@ -76,7 +90,8 @@ def gera_dados_rota(id_cliente_servico,id_forma_cobranca_correto):
             "tipo_cobranca": str(tipo_cobranca),
             "validade": str(validade),  # Conversão para string, se necessário
             "forma_cobranca": forma_dict,
-            "servico_tecnologia": servico_tecnologia_dict,
+            "servico_tecnologia": servico_tecnologia,
+            # "servico_taxa_instalacao": servico_taxa_instalacao,
             "grupos": dados_atualizados
         }
 
@@ -93,7 +108,8 @@ def gera_dados_rota(id_cliente_servico,id_forma_cobranca_correto):
 def executa_correcao(id_cliente_servico,dados_rota):
     load_dotenv()
     # Defina o token de autenticação Bearer
-    token = os.getenv("TOKEN")
+    df_token = consulta_token()
+    token = str(df_token.loc[0,'token'])
     rota = os.getenv("URL_PROD") 
     # print('aquiiiiiiiiiiiiiiiiiiiiiiiiiiii')
     # print(dados_rota)
