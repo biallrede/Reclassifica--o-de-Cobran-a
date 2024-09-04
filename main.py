@@ -87,17 +87,17 @@ def verifica_servico_forma_cobranca():
         
 
 
-# scheduler = BackgroundScheduler()
+scheduler = BackgroundScheduler()
 
-# def rotina1():
-#     verifica_servico_forma_cobranca()
+def rotina1():
+    verifica_servico_forma_cobranca()
     
 
-# schedule.every().day.at("10:45").do(rotina1)
-# scheduler.start()
+schedule.every().day.at("17:55").do(rotina1)
+scheduler.start()
 
-# while (1 == 1):
-#     schedule.run_pending()
-#     threading.Event().wait(1)
+while (1 == 1):
+    schedule.run_pending()
+    threading.Event().wait(1)
 
-verifica_servico_forma_cobranca()
+# verifica_servico_forma_cobranca()
