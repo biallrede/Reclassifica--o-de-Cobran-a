@@ -24,6 +24,7 @@ def consulta_servico_cobranca():
                     WHEN UPPER(d.descricao) like '%LINKWAP%' and UPPER(b.descricao) like '%LINKWAP%' then 1
                     WHEN UPPER(d.descricao) like '%LOGTEL%' and UPPER(b.descricao) like '%LOGTEL%' then 1
                     WHEN UPPER(d.descricao) like '%TI5%' and UPPER(b.descricao) like '%TI5%' then 1
+					WHEN UPPER(d.descricao) like '%TILOG%' and UPPER(b.descricao) like '%TI5%' then 1
                     WHEN UPPER(d.descricao) like '%UNILINK%' and UPPER(b.descricao) like '%UNI%' then 1
                     WHEN UPPER(d.descricao) like '%OBTI%' and UPPER(b.descricao) like '%OBTI%' then 1
                     WHEN UPPER(d.descricao) like '%MASTER%' and (UPPER(b.descricao) like '%MTEL%' 

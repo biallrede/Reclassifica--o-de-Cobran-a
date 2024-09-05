@@ -69,7 +69,8 @@ def verifica_servico_forma_cobranca():
         # Verifica se o valor de 'plano' está presente na coluna 'servico' do DataFrame df_de_para
         cont=0
         for servico in df_de_para['servico']:
-            if servico in plano:
+            plano_normalizado = str(plano).strip().upper()
+            if servico in plano_normalizado:
                 # Obtém o valor correspondente de 'id_forma_cobranca'
                 id_forma_cobranca = df_de_para['id_forma_cobranca'][cont]
                 # descricao_forma_cobranca = df_de_para['descricao'][cont]
