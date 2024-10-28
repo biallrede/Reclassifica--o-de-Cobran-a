@@ -9,4 +9,5 @@ openpyxl
 multipart 
 apscheduler
 schedule
+tabulate
 
