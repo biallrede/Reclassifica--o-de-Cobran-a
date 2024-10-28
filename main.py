@@ -58,6 +58,7 @@ def enviar_email(df_servico_forma_cobranca,retorno):
 
 def verifica_servico_forma_cobranca():
     retorno = ''
+    servico = ''
     df_servico_forma_cobranca = consulta_servico_cobranca()
     df_de_para = pd.read_excel("de_para.xlsx")
     for i in range(0,len(df_servico_forma_cobranca)):
@@ -67,38 +68,40 @@ def verifica_servico_forma_cobranca():
         plano = df_servico_forma_cobranca['plano'][i]
 
         # Verifica se o valor de 'plano' está presente na coluna 'servico' do DataFrame df_de_para
-        cont=0
-        for servico in df_de_para['servico']:
+        for j in range(0,len(df_de_para)):
             plano_normalizado = str(plano).strip().upper()
+            # print(plano_normalizado)
+            # print(servico)
+            servico = df_de_para.loc[j,'servico']
             if servico in plano_normalizado:
                 # Obtém o valor correspondente de 'id_forma_cobranca'
-                id_forma_cobranca = df_de_para['id_forma_cobranca'][cont]
+                id_forma_cobranca = df_de_para.loc[j,'id_forma_cobranca']
                 # descricao_forma_cobranca = df_de_para['descricao'][cont]
                 # print(id_cliente_servico,id_forma_cobranca)
                 dados_rota = gera_dados_rota(id_cliente_servico,id_forma_cobranca)
-                # print(dados_rota)
+                print(dados_rota)
                 retorno = executa_correcao(id_cliente_servico,dados_rota)
 
                 
             else:
                 id_forma_cobranca = 0  # ou outro valor padrão
-            cont=cont+1
-    enviar_email(df_servico_forma_cobranca,retorno)
+    # enviar_email(df_servico_forma_cobranca,retorno)
+    print('fim.....')
         
         
 
 
-scheduler = BackgroundScheduler()
+# scheduler = BackgroundScheduler()
 
-def rotina1():
-    verifica_servico_forma_cobranca()
+# def rotina1():
+#     verifica_servico_forma_cobranca()
     
 
-schedule.every().day.at("17:55").do(rotina1)
-scheduler.start()
+# schedule.every().day.at("09:23").do(rotina1)
+# scheduler.start()
 
-while (1 == 1):
-    schedule.run_pending()
-    threading.Event().wait(1)
+# while (1 == 1):
+#     schedule.run_pending()
+#     threading.Event().wait(1)
 
-# verifica_servico_forma_cobranca()
+verifica_servico_forma_cobranca()

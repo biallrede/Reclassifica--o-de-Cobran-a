@@ -43,8 +43,8 @@ def consulta_servico_cobranca():
                 and a.data_habilitacao notnull
                 ) as consulta 
                 where consulta.status_cobranca = 0
-                --and consulta.id_cliente_servico = 1052379
-                    '''
+                --and consulta.id_cliente_servico = 1088061
+                '''
         
     df = pd.read_sql(query,conn)
     return df
