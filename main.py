@@ -8,10 +8,11 @@ import threading
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
+from tabulate import tabulate
 
-def enviar_email(df_servico_forma_cobranca,retorno):
-    mensagem = 'A automação de correção de forma cobrança foi executada com {retorno} para os seguintes casos:\n {df_servico_forma_cobranca}'.format(retorno=retorno,df_servico_forma_cobranca=df_servico_forma_cobranca)
-    assunto = 'Teste Automação forma cobrança'
+def enviar_email(mensagem_texto):
+    mensagem = 'A automação de correção de forma cobrança foi executada para os seguintes casos:\n {df_servico_forma_cobranca}'.format(df_servico_forma_cobranca=mensagem_texto)
+    assunto = 'Automação forma cobrança'
     # Configurações do servidor SMTP
     MAIL_HOST = "mail.allrede.net.br"
     MAIL_PORT = 465
@@ -59,10 +60,14 @@ def enviar_email(df_servico_forma_cobranca,retorno):
 def verifica_servico_forma_cobranca():
     retorno = ''
     servico = ''
+    mensagem = ''
+    mensagem_texto = ''
     df_servico_forma_cobranca = consulta_servico_cobranca()
     df_de_para = pd.read_excel("de_para.xlsx")
     for i in range(0,len(df_servico_forma_cobranca)):
         id_cliente_servico = df_servico_forma_cobranca['id_cliente_servico'][i]
+        plano = df_servico_forma_cobranca['plano'][i]
+        forma_cob_antiga = df_servico_forma_cobranca['forma_cobranca'][i]
         # id_forma_cobranca_atual = df_servico_forma_cobranca['id_forma_cobranca'][i]
         # forma_cobranca = df_servico_forma_cobranca['forma_cobranca'][i]
         plano = df_servico_forma_cobranca['plano'][i]
@@ -76,16 +81,21 @@ def verifica_servico_forma_cobranca():
             if servico in plano_normalizado:
                 # Obtém o valor correspondente de 'id_forma_cobranca'
                 id_forma_cobranca = df_de_para.loc[j,'id_forma_cobranca']
+                forma_cobranca_correto = df_de_para.loc[j,'descricao']
                 # descricao_forma_cobranca = df_de_para['descricao'][cont]
                 # print(id_cliente_servico,id_forma_cobranca)
                 dados_rota = gera_dados_rota(id_cliente_servico,id_forma_cobranca)
-                print(dados_rota)
+                # print(dados_rota)
                 retorno = executa_correcao(id_cliente_servico,dados_rota)
-
-                
+                mensagem.append([id_cliente_servico, plano, forma_cob_antiga, forma_cobranca_correto])
+                tabela = tabulate(mensagem, 
+                              headers=["ID Cliente Serviço", "Plano", "De", "Para"], 
+                              tablefmt='html',
+                              colalign=("center", "center", "right"))
+                mensagem_texto += tabela    
             else:
                 id_forma_cobranca = 0  # ou outro valor padrão
-    # enviar_email(df_servico_forma_cobranca,retorno)
+    enviar_email(mensagem_texto)
     print('fim.....')
         
         
