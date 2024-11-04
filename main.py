@@ -8,7 +8,7 @@ import threading
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
-from estruturar_mensagem import gerar_mensagem
+
 
 
 def enviar_email(mensagem_texto):
