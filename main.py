@@ -8,8 +8,12 @@ import threading
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
+from fastapi import FastAPI
+import time
 
+global status
 
+app = FastAPI()
 
 def enviar_email(mensagem_texto):
     mensagem = 'A automação de correção de forma cobrança foi executada para os seguintes casos:\n {df_servico_forma_cobranca}'.format(df_servico_forma_cobranca=mensagem_texto)
@@ -59,59 +63,89 @@ def enviar_email(mensagem_texto):
         if servidor_smtp:
             servidor_smtp.quit()
 
-def verifica_servico_forma_cobranca():
-    retorno = ''
-    servico = ''
-    mensagem = []
-    forma_cobranca_correto = 0
-    forma_cob_antiga = 0
-    df_servico_forma_cobranca = consulta_servico_cobranca()
-    df_novo = pd.DataFrame(df_servico_forma_cobranca[['id_cliente_servico', 'plano', 'forma_cobranca']].copy())
-    df_html = df_novo.to_html(index=False)
-    df_de_para = pd.read_excel("de_para.xlsx")
-    for i in range(0,len(df_servico_forma_cobranca)):
-        id_cliente_servico = df_servico_forma_cobranca['id_cliente_servico'][i]
-        plano = df_servico_forma_cobranca['plano'][i]
-        forma_cob_antiga = df_servico_forma_cobranca['forma_cobranca'][i]
-        # id_forma_cobranca_atual = df_servico_forma_cobranca['id_forma_cobranca'][i]
-        # forma_cobranca = df_servico_forma_cobranca['forma_cobranca'][i]
-        plano = df_servico_forma_cobranca['plano'][i]
+def verifica_servico_forma_cobranca(tipo_execucao):
+    status=0
+    try:
+        if tipo_execucao == 2:
+            retorno = ''
+            servico = ''
+            mensagem = []
+            forma_cobranca_correto = 0
+            forma_cob_antiga = 0
+            df_servico_forma_cobranca = consulta_servico_cobranca()
+            df_novo = pd.DataFrame(df_servico_forma_cobranca[['id_cliente_servico', 'plano', 'forma_cobranca']].copy())
+            df_html = df_novo.to_html(index=False)
+            df_de_para = pd.read_excel("de_para.xlsx")
+            for i in range(0,len(df_servico_forma_cobranca)):
+                id_cliente_servico = df_servico_forma_cobranca['id_cliente_servico'][i]
+                plano = df_servico_forma_cobranca['plano'][i]
+                forma_cob_antiga = df_servico_forma_cobranca['forma_cobranca'][i]
+                # id_forma_cobranca_atual = df_servico_forma_cobranca['id_forma_cobranca'][i]
+                # forma_cobranca = df_servico_forma_cobranca['forma_cobranca'][i]
+                plano = df_servico_forma_cobranca['plano'][i]
 
-        # Verifica se o valor de 'plano' está presente na coluna 'servico' do DataFrame df_de_para
-        for j in range(0,len(df_de_para)):
-            plano_normalizado = str(plano).strip().upper()
-            # print(plano_normalizado)
-            # print(servico)
-            servico = df_de_para.loc[j,'servico']
-            if servico in plano_normalizado:
-                # Obtém o valor correspondente de 'id_forma_cobranca'
-                id_forma_cobranca = df_de_para.loc[j,'id_forma_cobranca']
-                forma_cobranca_correto = df_de_para.loc[j,'descricao']
-                # descricao_forma_cobranca = df_de_para['descricao'][cont]
-                # print(id_cliente_servico,id_forma_cobranca)
-                dados_rota = gera_dados_rota(id_cliente_servico,id_forma_cobranca)
-                # print(dados_rota)
-                retorno = executa_correcao(id_cliente_servico,dados_rota) 
-            else:
-                id_forma_cobranca = 0  # ou outro valor padrão
+                # Verifica se o valor de 'plano' está presente na coluna 'servico' do DataFrame df_de_para
+                for j in range(0,len(df_de_para)):
+                    plano_normalizado = str(plano).strip().upper()
+                    # print(plano_normalizado)
+                    # print(servico)
+                    servico = df_de_para.loc[j,'servico']
+                    if servico in plano_normalizado:
+                        # Obtém o valor correspondente de 'id_forma_cobranca'
+                        id_forma_cobranca = df_de_para.loc[j,'id_forma_cobranca']
+                        forma_cobranca_correto = df_de_para.loc[j,'descricao']
+                        # descricao_forma_cobranca = df_de_para['descricao'][cont]
+                        # print(id_cliente_servico,id_forma_cobranca)
+                        dados_rota = gera_dados_rota(id_cliente_servico,id_forma_cobranca)
+                        # print(dados_rota)
+                        retorno = executa_correcao(id_cliente_servico,dados_rota) 
+                    else:
+                        id_forma_cobranca = 0  # ou outro valor padrão
+                
+            enviar_email(df_html)
+            print('fim.....')
+            status = 1
+
+        if tipo_execucao == 1:
+            status = 1
+            print('rotina ativa')
+    except:
+        print("Erro ao executar a rotina")
+    
+    return status        
         
-    enviar_email(df_html)
-    print('fim.....')
-        
-        
+@app.get("/verifica_status")
+def verifica_status_ativo():
+    tipo_execucao = 1
+    resposta = verifica_servico_forma_cobranca(tipo_execucao)
+    return resposta
 
+def iniciar_agendador():
+    tipo_execucao = 2
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(verifica_servico_forma_cobranca, "cron", hour=17, minute=50, args=[tipo_execucao])  # Agenda a rotina para 17:04 todos os dias
+    scheduler.start()
 
-scheduler = BackgroundScheduler()
+    # Loop necessário para o `schedule` (opcional)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
-def rotina1():
-    verifica_servico_forma_cobranca()
+# Iniciar o agendador em uma thread separada
+thread_agendador = threading.Thread(target=iniciar_agendador, daemon=True)
+thread_agendador.start()
+
+# scheduler = BackgroundScheduler()
+
+# def rotina1():
+#     verifica_servico_forma_cobranca()
     
 
-schedule.every().day.at("17:55").do(rotina1)
-scheduler.start()
+# schedule.every().day.at("17:55").do(rotina1)
+# scheduler.start()
 
-while (1 == 1):
-    schedule.run_pending()
-    threading.Event().wait(1)
+# while (1 == 1):
+#     schedule.run_pending()
+#     threading.Event().wait(1)
 
 # verifica_servico_forma_cobranca()
